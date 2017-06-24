@@ -1,0 +1,9 @@
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\bin\Release\TelemetryProject.exe
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\bin\Release\TelemetryProject.pdb
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.Properties.Resources.resources
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.csproj.GenerateResource.Cache
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.exe
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.pdb
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.MainForm.resources
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.csprojResolveAssemblyReference.cache
+C:\Users\Dean\documents\visual studio 2015\Projects\TelemetryProject\TelemetryProject\obj\Release\TelemetryProject.AboutForm.resources
