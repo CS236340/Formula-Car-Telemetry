@@ -1,0 +1,24 @@
+********************************************************************************
+*                                Instructions                                  *
+********************************************************************************
+
+
+This project was built by Visual Studio 2015 professional, 
+and it's HIGHLY recommended to use the same version to compile.
+
+
+These are the instructions to compile the project:
+
+1. On GitHub website, in the "Code" section, Press "Clone or download" 
+and then "Download ZIP".
+
+2. Extract the zip file to a folder.
+
+3. Open Visual Studio 2015 professional. 
+in the menu, select File -> Open -> Project/Solution.
+
+4. Browse to the extracted folder and select the file "TelemetryProject.sln"
+
+5. Press "Start" (Higher toolbar) to compile the project.
+
+You can choose "Offline" and open the csv file that's in the main folder.
