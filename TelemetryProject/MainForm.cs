@@ -14,7 +14,7 @@ namespace TelemetryProject
     {
         //Public constants
         public const int TIMER_INTERVAL = 50;
-        public const double TIME_DELTA = 0.05;
+        public double TIME_DELTA = 0.05;
         public const float MINIMAL_DEGREE = -120;
         public const float MAXIMAL_DEGREE = 120;
         public const double MAX_FUEL_CAPACITY = 5.0;
@@ -25,33 +25,27 @@ namespace TelemetryProject
         public const int HIGH_RPM = 11500;
         public const int HIGH_TEMPERATURE = 105;
 
-
         //Global variables
+        //General
         System.Windows.Forms.Timer refreshTimer;
-        string[] enduranceLogFields;
-        TextFieldParser parser;
-        double fuelCapacityAtStart;
-        double fuelCapacity;
-        int fuelBarHeight;
-        int fuelBarHeightLocation;
         double timeFromStart;
-        OpenFileDialog openCSVDialog = new OpenFileDialog();
-        string csvPath;
-
         int timerCounter;
         int errorsCounter;
 
         //rpm clock
         float rpmClockDegree;
         Bitmap rpmIndicatorBmp;
-
         //temperature clock
         float tempClockDegree;
         Bitmap tempIndicatorBmp;
-
         //speed clock
         float speedClockDegree;
         Bitmap speedIndicatorBmp;
+        //fuel bar
+        double fuelCapacityAtStart;
+        double fuelCapacity;
+        int fuelBarHeight;
+        int fuelBarHeightLocation;
 
         //Graph
         Pen tempPen, rpmPen;
@@ -74,6 +68,16 @@ namespace TelemetryProject
         String warningToPresent;
         int noMessagesCounter;
         StringBuilder onlineCsv;
+        //Offline option
+        string[] enduranceLogFields;
+        TextFieldParser parser;
+        OpenFileDialog openCSVDialog = new OpenFileDialog();
+        string csvPath;
+        //Data Loss Treatment
+        /*double bufferFromStart;
+        double bufferPerSecond;
+        double averageBuffer;
+        int dataLossCounter;*/
 
         //Endurance calculation information
         int enduranceLengthInSeconds;
@@ -93,7 +97,11 @@ namespace TelemetryProject
         double antiRollToPresent;
         double accelerationToPresent;
         double fuelOpenTimeToPresent;
-
+        /* Event: MainForm
+        * 
+        * System event for main form creation.
+        * Added painting option, the rest of the code is default.
+        */
         public MainForm()
         {
             SetStyle(ControlStyles.UserPaint, true);
@@ -101,7 +109,11 @@ namespace TelemetryProject
             SetStyle(ControlStyles.DoubleBuffer, true);
             InitializeComponent();
         }
-
+        /* Event: MainForm_Load
+        * 
+        * System event that will be called when the form is loaded.
+        * Every configuration that is needed to occur when the form will load is found here.
+        */
         private void MainForm_Load(object sender, EventArgs e)
         {
             //Counter for timer
@@ -198,15 +210,35 @@ namespace TelemetryProject
             antiRollLabel.Text = antiRollToPresent.ToString();
             accelerationLabel.Text = accelerationToPresent.ToString();
 
+            //receiving action initialize
             messageBuffer = "";
             dataFromSerialPort = new Queue<string>();
 
+            //alarm action initialize
             warningToPresent = "";
             alarmMessages = new string[] {"","","","","",""};
             noMessagesCounter = 0;
             errorsCounter = 0;
+
+            //Data Loss Treatment
+            /*bufferFromStart = 0;
+            bufferPerSecond = 0;
+            averageBuffer = 0;
+            dataLossCounter = -1;*/
         }
 
+        /***************************************************************************************************
+         *                                       Threads Actions                                           *
+         ***************************************************************************************************/
+        /* Event: HandleTimer
+        * 
+        * This is NOT a thread start, but it's still the main thread's main action
+        * this action is the refresh timer's handler, this action will take care of updating visual objects.
+        * on online: this action will pop message from message queue and update relevant objects and 
+        * add to output.
+        * on offline: read one line and update objects.
+        * also update time label
+        */
         private void HandleTimer(object source, EventArgs e)
         {
             //update time label
@@ -234,6 +266,25 @@ namespace TelemetryProject
                     oldRpmValue = rpmToPresent;
                     oldTempValue = tempToPresent;
                 }
+
+                //Data Loss Treatment
+                /*if (dataLossCounter > 0)
+                {
+                    dataLossCounter--;
+                }
+                else if (dataLossCounter == 0)
+                {
+                    TIME_DELTA = 0.05;
+                    dataLossCounter = -1;
+                }
+                averageBuffer = bufferFromStart / timeFromStart;
+                if((averageBuffer*(1.5)) < dataFromSerialPort.Count) //For safety coefficient, duplicate average buffer by 50%
+                {
+                    dataLossCounter = (int)((double)dataFromSerialPort.Count / averageBuffer);
+                    timeFromStart -= ((double)dataFromSerialPort.Count / averageBuffer);
+                    timerCounter = (int)(timeFromStart * (1 / TIME_DELTA));
+                    TIME_DELTA = 0.01;
+                }*/
 
                 for (int i=0;i<5;i++) { //read 5 messages each timer iteration
 
@@ -329,6 +380,9 @@ namespace TelemetryProject
                         logFile.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + ": Number of corrupted messages: " + errorsCounter + ". average per second: " + ((double)errorsCounter /(double)timeFromStart));
                         Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + ": Number of corrupted messages: " + errorsCounter + ". average per second: " + ((double)errorsCounter / (double)timeFromStart));
                         errorsNumberDisplayed = true;
+
+                        //Data Loss Treatment
+                        //bufferPerSecond = 0;
                     }
                 }
                 //Fuel capacity calculation - moved to Pi-innovo
@@ -408,7 +462,6 @@ namespace TelemetryProject
                     graphBmpPictureBox.Location = new Point(graphBmpPictureBox.Location.X - 1, graphBmpPictureBox.Location.Y);
                     graphScrollBar.Value++;
                 }
-
             }
 
             fuelCapacityLabel.Text = fuelCapacity.ToString();
@@ -456,30 +509,25 @@ namespace TelemetryProject
                 fuelSpent = fuelCapacityAtStart - fuelCapacity;
                 if (suggestedFuelSpent > fuelSpent)
                 {
-
                     fuelDiffAmountLabel.Text = (suggestedFuelSpent - fuelSpent).ToString().Substring(0, 5);
                     fuelDiffSignLabel.Text = "+";
 
                     int newFuelConsumptionBarHeight = Convert.ToInt32((suggestedFuelSpent - fuelSpent) * 500);
                     if (newFuelConsumptionBarHeight <= ((fuelDiffPanel.Height - fuelDiffBarPictureBox.Height) / 2))
                     {
-
                         fuelDiffAmountPictureBox.Height = newFuelConsumptionBarHeight;
                         fuelDiffAmountPictureBox.Location = new Point(fuelDiffAmountPictureBox.Location.X, fuelDiffBarPictureBox.Location.Y - fuelDiffAmountPictureBox.Height);
-
                     }
                     fuelDiffAmountPictureBox.BackColor = Color.Lime;
                 }
                 else
                 {
-
                     fuelDiffAmountLabel.Text = (fuelSpent - suggestedFuelSpent).ToString().Substring(0, 5);
                     fuelDiffSignLabel.Text = "-";
 
                     int newFuelConsumptionBarHeight = Convert.ToInt32((fuelSpent - suggestedFuelSpent) * 500);
                     if (newFuelConsumptionBarHeight <= ((fuelDiffPanel.Height - fuelDiffBarPictureBox.Height) / 2))
                     {
-
                         fuelDiffAmountPictureBox.Height = newFuelConsumptionBarHeight;
                         fuelDiffAmountPictureBox.Location = new Point(fuelDiffAmountPictureBox.Location.X, fuelDiffBarPictureBox.Location.Y + fuelDiffBarPictureBox.Height);
                     }
@@ -508,7 +556,12 @@ namespace TelemetryProject
             //Acceleration
             accelerationLabel.Text = accelerationToPresent.ToString();
         }
-
+        /* Event: receiveDataFromSerialPort
+        * 
+        * This action will be performed by the receiving thread, that will be created at online start.
+        * this action is responsible for read data from serial port, validate and add to messages queue.
+        * the thread will update the log file in every action he will perform.
+        */
         private void receiveDataFromSerialPort()
         {
             while (true) {
@@ -535,6 +588,9 @@ namespace TelemetryProject
                                 dataFromSerialPort.Enqueue(messageBuffer);
                                 logFile.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + ": Message added: " + messageBuffer);
                                 Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + ": Message added: " + messageBuffer);
+                                //Data Loss Treatment
+                                //bufferFromStart++;
+                                //bufferPerSecond++;
                             }
                             else if (messageBuffer.Length > 0) {
 
@@ -560,7 +616,13 @@ namespace TelemetryProject
                 }
             }
         }
-
+        /* Event: alarmPresentation
+        * 
+        * This action will be performed by the alarm thread, that will be created at online start.
+        * this action is responsible for iterating over the alarm messages array and send to 
+        * presentation the most critical error that exists at the moment.
+        * this action will be performed each 2 seconds.
+        */
         private void alarmPresentation()
         {
             while (true)
@@ -576,7 +638,12 @@ namespace TelemetryProject
                 Thread.Sleep(2000); //wait two seconds to check for the error's update
             }
         }
-
+        /* Event: HandleTimer
+        * 
+        * This is NOT a thread start, but it's the alarm thread's main action
+        * this action is the alarm timer's handler, this action will take care of blinking the 
+        * warning message to alert the user.
+        */
         private void HandleWarningTimer(object source, EventArgs e)
         {
             alarmLabel.Text = warningToPresent;
@@ -1116,7 +1183,7 @@ namespace TelemetryProject
         * the function will rotate the image by it center, according to the given angle.
         * the function will return the rotated image.
         */
-        public Image RotateImg(Image bmp, float angle, int bmpSize)
+        private Image RotateImg(Image bmp, float angle, int bmpSize)
         {
             bmp = new Bitmap(bmp, (bmp.Width * bmpSize) / 100, (bmp.Height * bmpSize) / 100);
 
@@ -1222,7 +1289,7 @@ namespace TelemetryProject
         * 
         * the function will use the refresh timer interval rate to calculate and display the rate of the 
         * offline presentation for the user.
-        * for example: x1.00 is normal speed. x2.00 is twice as fast from the regular speed.
+        * for example: x1.00 is normal speed. x2.00 is two times fast from regular speed.
         */
         private void UpdateTimeSpeedLabel()
         {
