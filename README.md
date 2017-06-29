@@ -35,3 +35,9 @@ This project was built in C# environment at Visual Studio 2015 profession, it's 
 
 The exact instructions on how to download and compile the project can be found in "installation.txt" in the project's main folder.
 
+### Thank you
+
+We really hope you can enjoy our project as much as we did.
+
+If you have any questions or suggestions for improvement, feel free to contact:
+deanzadok@campus.technion.ac.il
