@@ -15,6 +15,8 @@ For example, if the driver is too aggressive and wasting too much gas, the telem
 The car's network is powered by CAN bus protocol, our system includes digital devices that we're using to conect to this network, convert the network messages, and transmit them to a remote control workstation.
 Then, a C# designed software, we will receive the messages and present them in a way that will be easy to the user to supervise the car.
 
+For more explanations, check the presentation that's in the main folder.
+
 ### Features
 
 * Graphical objects to present the incoming data, such as analog clocks and a moveable graph.
