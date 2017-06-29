@@ -33,7 +33,7 @@ Then, a C# designed software, we will receive the messages and present them in a
 
 This project was built in C# environment at Visual Studio 2015 profession, it's highly recommended to use the same or higher version than this.
 
-The exact instructions on how to download and compile the project can be found in "installation.txt" in the project's main folder.
+The exact instructions on how to download and compile the project can be found in "Instructions.txt" in the project's main folder.
 
 ### Thank you
 
